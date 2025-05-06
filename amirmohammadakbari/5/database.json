@@ -1,0 +1,14 @@
+{
+  "records": [
+    {
+      "name": "ali",
+      "lastname": "moghaddam",
+      "email": "ali@gmail.com"
+    },
+    {
+      "name": "amir",
+      "lastname": "gholami",
+      "email": "asghar@gmail.com"
+    }
+  ]
+}
