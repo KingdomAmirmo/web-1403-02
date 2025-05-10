@@ -1,0 +1,69 @@
+import { writeFile, readFile } from 'fs';
+import { use, start, write } from "./07-httpFramework-a.js";
+import jwt from 'jsonwebtoken';
+const JWT_SECRET = 'mySecretString';
+const TOKEN_TIME = 5; //minute
+
+function getCookie(req) {
+    const cookieHeader = req.headers.cookie;
+    if (!cookieHeader) return null;
+    const cookies = cookieHeader.split('; ').reduce((acc, cookie) => {
+        const [key, value] = cookie.split('=');
+        acc[key] = decodeURIComponent(value);
+        return acc;
+    }, {});
+    return cookies['token'];
+}
+
+function verifyToken(token) {
+    try {
+        let decoded = jwt.verify(token, JWT_SECRET);
+        if ((Date.now() / 1000 - decoded.iat) / 60 < TOKEN_TIME) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+}
+
+use('POST', 'sum', function (request, response) {
+    const token = getCookie(request);
+    if (!verifyToken(token)) {
+        write(response, 400, 'invalid token');
+    } else {
+        response.write((parseInt(request.data.input1) + parseInt(request.data.input2)).toString());
+        response.end();
+    }
+});
+
+// سایر توابع بدون تغییر...
+
+use('POST', 'token', function (request, response) {
+    readFile('./users.json', 'utf8', function (error, fileData) {
+        if (error) {
+            console.log('ERROR:', error);
+            write(response, 500, 'ERROR:' + error);
+        } else {
+            let dataObject = JSON.parse(fileData);
+            let foundIndex = -1;
+            for (let i = 0; i < dataObject.records.length; i++) {
+                if (dataObject.records[i].user === request.data.user && dataObject.records[i].pass === request.data.pass) {
+                    foundIndex = i;
+                }
+            }
+
+            if (foundIndex >= 0) {
+                let signedToken = jwt.sign(dataObject.records[foundIndex], JWT_SECRET);
+                // Set the token as a cookie
+                response.setHeader('Set-Cookie', `token=${signedToken}; HttpOnly; Path=/`);
+                write(response, 200, 'Token set in cookie.');
+            } else {
+                write(response, 400, 'Wrong username and/or password.');
+            }
+        }
+    });
+});
+
+start();
