@@ -1,0 +1,51 @@
+<html>
+<head>
+    <title>Login Page</title>
+</head>
+<body>
+    <b>Welcome!</b>
+    
+    <form id="loginForm">
+        <input type="text" name="username" id="username" placeholder="Username" required>
+        <input type="password" name="password" id="password" placeholder="Password" required>
+        <input type="submit" value="Login">
+    </form>
+
+    <div id="message"></div>
+
+    <script>
+        document.getElementById("loginForm").
+            addEventListener("submit", 
+            async function(event) {
+                event.preventDefault();
+
+                const username = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+
+                try {
+                    const response = await fetch('http://127.0.0.1/token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ user: username, pass: password })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        document.getElementById("message").innerText = errorText;
+                        console.log('Login failed:', errorText);
+                    } else {
+                        const json = await response.json();
+                        document.getElementById("message").innerText = 'Login successful! Token: ' + json.token;
+                        console.log('Token received:', json.token);
+                    }                
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById("message").innerText = 'An error occurred. Please try again.';
+                }
+        });
+        
+    </script>
+</body>
+</html>
