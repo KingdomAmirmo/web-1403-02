@@ -1,0 +1,61 @@
+<html>
+<head>
+    <title>Sum Page</title>
+</head>
+<body>
+    <b>Welcome to the Sum Page!</b>
+    
+    <form id="sumForm">
+        <input type="number" name="input1" id="input1" placeholder="Input 1" required>
+        <input type="number" name="input2" id="input2" placeholder="Input 2" required>
+        <input type="submit" value="Calculate Sum">
+    </form>
+
+    <div id="result"></div>
+    <div id="message"></div>
+
+    <script>
+
+        async function checkLogin() {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+            return token ? token.split('=')[1] : null;
+        }
+
+        document.getElementById("sumForm").addEventListener("submit", async function(event) {
+            event.preventDefault(); 
+            const token = await checkLogin();
+            if (!token) {
+                document.getElementById("message").innerText = 'Please login first.';
+                return;
+            }
+
+            const input1 = document.getElementById("input1").value;
+            const input2 = document.getElementById("input2").value;
+
+            try {
+                const response = await fetch('http://127.0.0.1/sum', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ input1: input1, input2: input2 })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    document.getElementById("message").innerText = errorText;
+                    console.log('Error:', errorText);
+                } else {
+                    const sum = await response.text();
+                    document.getElementById("result").innerText = 'Sum: ' + sum;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById("message").innerText = 'An error occurred. Please try again.';
+            }
+        });
+
+    </script>
+</body>
+</html>
