@@ -88,6 +88,31 @@
             background-color: #cccccc;
             cursor: not-allowed;
         }
+        .add-item-container {
+            display: flex;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .add-item-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .add-item-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-item-btn:hover {
+            background-color: #0069d9;
+        }
         .notification {
             position: fixed;
             top: 20px;
@@ -109,6 +134,11 @@
     <h1>Todo Items List</h1>
     <div id="loading" class="loading">Loading items...</div>
     <ul id="todo-list" class="todo-list"></ul>
+    
+    <div class="add-item-container">
+        <input type="text" id="new-item-input" class="add-item-input" placeholder="Enter new todo item...">
+        <button id="add-item-btn" class="add-item-btn">Add Item</button>
+    </div>
     
     <div id="notification" class="notification"></div>
 
@@ -147,64 +177,7 @@
                     
                     if (data.records && data.records.length > 0) {
                         data.records.forEach(item => {
-                            const li = document.createElement('li');
-                            li.className = 'todo-item';
-                            li.dataset.id = item.id;
-                            
-                            // ایجاد checkbox
-                            const checkboxContainer = document.createElement('div');
-                            checkboxContainer.className = 'checkbox-container';
-                            
-                            const checkbox = document.createElement('input');
-                            checkbox.type = 'checkbox';
-                            checkbox.checked = item.status;
-                            checkbox.id = `checkbox-${item.id}`;
-                            
-                            checkboxContainer.appendChild(checkbox);
-                            
-                            // ایجاد متن آیتم
-                            const textSpan = document.createElement('span');
-                            textSpan.className = 'todo-text';
-                            textSpan.textContent = item.text;
-                            
-                            // ایجاد وضعیت
-                            const statusSpan = document.createElement('span');
-                            statusSpan.className = `todo-status ${item.status ? 'completed' : 'pending'}`;
-                            statusSpan.textContent = item.status ? 'Completed' : 'Pending';
-                            statusSpan.id = `status-${item.id}`;
-                            
-                            // ایجاد دکمه ذخیره
-                            const saveBtn = document.createElement('button');
-                            saveBtn.className = 'save-btn';
-                            saveBtn.textContent = 'Save';
-                            saveBtn.dataset.id = item.id;
-                            saveBtn.addEventListener('click', updateItemStatus);
-                            
-                            // ایجاد شناسه آیتم
-                            const idSpan = document.createElement('span');
-                            idSpan.className = 'item-id';
-                            idSpan.textContent = `ID: ${item.id}`;
-                            
-                            // اضافه کردن عناصر به لیست
-                            li.appendChild(checkboxContainer);
-                            li.appendChild(textSpan);
-                            li.appendChild(statusSpan);
-                            li.appendChild(saveBtn);
-                            li.appendChild(idSpan);
-                            
-                            todoList.appendChild(li);
-                            
-                            // اضافه کردن event listener برای تغییر وضعیت checkbox
-                            checkbox.addEventListener('change', function() {
-                                const statusSpan = document.getElementById(`status-${item.id}`);
-                                if (this.checked) {
-                                    statusSpan.textContent = 'Completed';
-                                    statusSpan.className = 'todo-status completed';
-                                } else {
-                                    statusSpan.textContent = 'Pending';
-                                    statusSpan.className = 'todo-status pending';
-                                }
-                            });
+                            createTodoItemElement(item);
                         });
                     } else {
                         const message = document.createElement('div');
@@ -219,6 +192,68 @@
                 });
             }
             
+            // تابع برای ایجاد عنصر HTML برای یک آیتم Todo
+            function createTodoItemElement(item) {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.dataset.id = item.id;
+                
+                // ایجاد checkbox
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'checkbox-container';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = item.status;
+                checkbox.id = `checkbox-${item.id}`;
+                
+                checkboxContainer.appendChild(checkbox);
+                
+                // ایجاد متن آیتم
+                const textSpan = document.createElement('span');
+                textSpan.className = 'todo-text';
+                textSpan.textContent = item.text;
+                
+                // ایجاد وضعیت
+                const statusSpan = document.createElement('span');
+                statusSpan.className = `todo-status ${item.status ? 'completed' : 'pending'}`;
+                statusSpan.textContent = item.status ? 'Completed' : 'Pending';
+                statusSpan.id = `status-${item.id}`;
+                
+                // ایجاد دکمه ذخیره
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'save-btn';
+                saveBtn.textContent = 'Save';
+                saveBtn.dataset.id = item.id;
+                saveBtn.addEventListener('click', updateItemStatus);
+                
+                // ایجاد شناسه آیتم
+                const idSpan = document.createElement('span');
+                idSpan.className = 'item-id';
+                idSpan.textContent = `ID: ${item.id}`;
+                
+                // اضافه کردن عناصر به لیست
+                li.appendChild(checkboxContainer);
+                li.appendChild(textSpan);
+                li.appendChild(statusSpan);
+                li.appendChild(saveBtn);
+                li.appendChild(idSpan);
+                
+                document.getElementById('todo-list').appendChild(li);
+                
+                // اضافه کردن event listener برای تغییر وضعیت checkbox
+                checkbox.addEventListener('change', function() {
+                    const statusSpan = document.getElementById(`status-${item.id}`);
+                    if (this.checked) {
+                        statusSpan.textContent = 'Completed';
+                        statusSpan.className = 'todo-status completed';
+                    } else {
+                        statusSpan.textContent = 'Pending';
+                        statusSpan.className = 'todo-status pending';
+                    }
+                });
+            }
+            
             // تابع برای به‌روزرسانی وضعیت آیتم
             function updateItemStatus(event) {
                 const itemId = event.target.dataset.id;
@@ -226,11 +261,9 @@
                 const newStatus = checkbox.checked;
                 const saveBtn = event.target;
                 
-                // غیرفعال کردن دکمه ذخیره در حین ارسال درخواست
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'Saving...';
                 
-                // ارسال درخواست به سرور
                 fetch('http://127.0.0.1/item', {
                     method: 'PUT',
                     headers: {
@@ -262,7 +295,6 @@
                     saveBtn.textContent = 'Save';
                     saveBtn.disabled = false;
                     
-                    // بازگرداندن وضعیت قبلی در صورت خطا
                     const checkbox = document.querySelector(`#checkbox-${itemId}`);
                     checkbox.checked = !newStatus;
                     const statusSpan = document.getElementById(`status-${itemId}`);
@@ -271,7 +303,59 @@
                 });
             }
             
-            // بارگذاری اولیه آیتم‌ها
+            function addNewItem() {
+                const input = document.getElementById('new-item-input');
+                const btn = document.getElementById('add-item-btn');
+                const text = input.value.trim();
+                
+                if (!text) {
+                    showNotification('Please enter a todo item', false);
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.textContent = 'Adding...';
+                
+                fetch('http://127.0.0.1/item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    },
+                    body: JSON.stringify({
+                        text: text
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to add new item');
+                    }
+                    return response.text();
+                })
+                .then(message => {
+                    showNotification('Item added successfully!', true);
+                    input.value = '';
+                    btn.textContent = 'Add Item';
+                    btn.disabled = false;
+
+                    loadItems();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error adding item: ' + error.message, false);
+                    btn.textContent = 'Add Item';
+                    btn.disabled = false;
+                });
+            }
+            
+            document.getElementById('add-item-btn').addEventListener('click', addNewItem);
+            
+            document.getElementById('new-item-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewItem();
+                }
+            });
+            
             loadItems();
         });
     </script>
