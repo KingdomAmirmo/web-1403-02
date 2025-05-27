@@ -1,0 +1,51 @@
+<html>
+<head>
+    <title>08 login a</title>
+    <style>
+        #result{display:block; width:100px; height:100px; background-color: lightblue;}
+    </style>
+</head>
+<body>
+    <b>Salam !</b>
+    <input type="text" id="a">
+    <input type="text" id="b">
+    <input type="button" id="c" value="login">
+    <div id="result"></div>
+    <script>
+        async function getData() {
+            let val1 = document.getElementById("a").value;
+            let val2 = document.getElementById("b").value;
+            const url = "http://127.0.0.1/token/";
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        user: val1,
+                        pass: val2
+                    })
+                });
+                if (!response.ok) {
+                    console.log('ERROR.');
+                    const message = await response.text();
+                    let elem = document.createElement("span");
+                    elem.innerHTML = message;
+                    document.getElementById("result").appendChild(elem);
+                }
+                else{
+                    const json = await response.json();
+                    console.log(json);
+                    let elem = document.createElement("span");
+                    elem.innerHTML = JSON.stringify(json);
+                    document.getElementById("result").appendChild(elem);
+                }                
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        document.getElementById("c")
+            .addEventListener("click", function(){
+                getData();
+            });        
+    </script>
+</body>
+</html>

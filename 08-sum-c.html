@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>page 08 b</title>
+    <style>
+        #result{display:block; width:100px; height:100px; background-color: lightblue;}
+    </style>
+</head>
+<body>
+    <b>Salam !</b>
+    <input type="text" id="a">
+    <input type="text" id="b">
+    <input type="button" id="c" value="calc">
+    <div id="result"></div>
+    <script>
+        async function getData() {
+            let val1 = document.getElementById("a").value;
+            let val2 = document.getElementById("b").value;
+            const url = "http://127.0.0.1/sum/"+val1+"/"+val2;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.log('ERROR.')
+                }
+                else{
+                    const json = await response.json();
+                    console.log(typeof json);
+                    let elem = document.createElement("span");
+                    elem.innerHTML = json.toString();
+                    document.getElementById("result").appendChild(elem);
+                }                
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        document.getElementById("c")
+            .addEventListener("click", function(){
+                getData();
+            });        
+    </script>
+</body>
+</html>
