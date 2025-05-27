@@ -144,7 +144,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // تابع برای نمایش نوتیفیکیشن
             function showNotification(message, isSuccess) {
                 const notification = document.getElementById('notification');
                 notification.textContent = message;
@@ -156,7 +155,6 @@
                 }, 3000);
             }
 
-            // تابع برای ارسال درخواست GET و دریافت آیتم‌ها
             function loadItems() {
                 fetch('http://127.0.0.1/item', {
                     method: 'GET',
@@ -192,13 +190,11 @@
                 });
             }
             
-            // تابع برای ایجاد عنصر HTML برای یک آیتم Todo
             function createTodoItemElement(item) {
                 const li = document.createElement('li');
                 li.className = 'todo-item';
                 li.dataset.id = item.id;
                 
-                // ایجاد checkbox
                 const checkboxContainer = document.createElement('div');
                 checkboxContainer.className = 'checkbox-container';
                 
@@ -209,30 +205,25 @@
                 
                 checkboxContainer.appendChild(checkbox);
                 
-                // ایجاد متن آیتم
                 const textSpan = document.createElement('span');
                 textSpan.className = 'todo-text';
                 textSpan.textContent = item.text;
                 
-                // ایجاد وضعیت
                 const statusSpan = document.createElement('span');
                 statusSpan.className = `todo-status ${item.status ? 'completed' : 'pending'}`;
                 statusSpan.textContent = item.status ? 'Completed' : 'Pending';
                 statusSpan.id = `status-${item.id}`;
                 
-                // ایجاد دکمه ذخیره
                 const saveBtn = document.createElement('button');
                 saveBtn.className = 'save-btn';
                 saveBtn.textContent = 'Save';
                 saveBtn.dataset.id = item.id;
                 saveBtn.addEventListener('click', updateItemStatus);
                 
-                // ایجاد شناسه آیتم
                 const idSpan = document.createElement('span');
                 idSpan.className = 'item-id';
                 idSpan.textContent = `ID: ${item.id}`;
                 
-                // اضافه کردن عناصر به لیست
                 li.appendChild(checkboxContainer);
                 li.appendChild(textSpan);
                 li.appendChild(statusSpan);
@@ -241,7 +232,6 @@
                 
                 document.getElementById('todo-list').appendChild(li);
                 
-                // اضافه کردن event listener برای تغییر وضعیت checkbox
                 checkbox.addEventListener('change', function() {
                     const statusSpan = document.getElementById(`status-${item.id}`);
                     if (this.checked) {
@@ -254,7 +244,6 @@
                 });
             }
             
-            // تابع برای به‌روزرسانی وضعیت آیتم
             function updateItemStatus(event) {
                 const itemId = event.target.dataset.id;
                 const checkbox = document.querySelector(`#checkbox-${itemId}`);
