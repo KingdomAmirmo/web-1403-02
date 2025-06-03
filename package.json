@@ -1,6 +1,9 @@
 {
     "type": "module",
     "dependencies": {
-        "jsonwebtoken": "^9.0.2"
+        "assert": "^2.1.0",
+        "axios": "^1.9.0",
+        "jsonwebtoken": "^9.0.2",
+        "mocha": "^11.5.0"
     }
 }

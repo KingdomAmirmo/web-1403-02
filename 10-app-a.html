@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Items List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .todo-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .todo-item {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .todo-text {
+            flex-grow: 1;
+            margin: 0 15px;
+        }
+        .todo-status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+        .completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .item-id {
+            color: #666;
+            font-size: 0.8em;
+            min-width: 60px;
+            text-align: right;
+        }
+        .save-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .save-btn:hover {
+            background-color: #218838;
+        }
+        .save-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .add-item-container {
+            display: flex;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .add-item-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .add-item-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-item-btn:hover {
+            background-color: #0069d9;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            color: white;
+            display: none;
+        }
+        .success {
+            background-color: #28a745;
+        }
+        .error-notif {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>Todo Items List</h1>
+    <div id="loading" class="loading">Loading items...</div>
+    <ul id="todo-list" class="todo-list"></ul>
+    
+    <div class="add-item-container">
+        <input type="text" id="new-item-input" class="add-item-input" placeholder="Enter new todo item...">
+        <button id="add-item-btn" class="add-item-btn">Add Item</button>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function showNotification(message, isSuccess) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${isSuccess ? 'success' : 'error-notif'}`;
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+
+            function loadItems() {
+                fetch('http://127.0.0.1/item', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    const todoList = document.getElementById('todo-list');
+                    todoList.innerHTML = '';
+                    
+                    if (data.records && data.records.length > 0) {
+                        data.records.forEach(item => {
+                            createTodoItemElement(item);
+                        });
+                    } else {
+                        const message = document.createElement('div');
+                        message.textContent = 'No todo items found.';
+                        todoList.appendChild(message);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loading').textContent = 'Error loading items: ' + error.message;
+                    document.getElementById('loading').className = 'error';
+                    console.error('Error:', error);
+                });
+            }
+            
+            function createTodoItemElement(item) {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.dataset.id = item.id;
+                
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'checkbox-container';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = item.status;
+                checkbox.id = `checkbox-${item.id}`;
+                
+                checkboxContainer.appendChild(checkbox);
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'todo-text';
+                textSpan.textContent = item.text;
+                
+                const statusSpan = document.createElement('span');
+                statusSpan.className = `todo-status ${item.status ? 'completed' : 'pending'}`;
+                statusSpan.textContent = item.status ? 'Completed' : 'Pending';
+                statusSpan.id = `status-${item.id}`;
+                
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'save-btn';
+                saveBtn.textContent = 'Save';
+                saveBtn.dataset.id = item.id;
+                saveBtn.addEventListener('click', updateItemStatus);
+                
+                const idSpan = document.createElement('span');
+                idSpan.className = 'item-id';
+                idSpan.textContent = `ID: ${item.id}`;
+                
+                li.appendChild(checkboxContainer);
+                li.appendChild(textSpan);
+                li.appendChild(statusSpan);
+                li.appendChild(saveBtn);
+                li.appendChild(idSpan);
+                
+                document.getElementById('todo-list').appendChild(li);
+                
+                checkbox.addEventListener('change', function() {
+                    const statusSpan = document.getElementById(`status-${item.id}`);
+                    if (this.checked) {
+                        statusSpan.textContent = 'Completed';
+                        statusSpan.className = 'todo-status completed';
+                    } else {
+                        statusSpan.textContent = 'Pending';
+                        statusSpan.className = 'todo-status pending';
+                    }
+                });
+            }
+            
+            function updateItemStatus(event) {
+                const itemId = event.target.dataset.id;
+                const checkbox = document.querySelector(`#checkbox-${itemId}`);
+                const newStatus = checkbox.checked;
+                const saveBtn = event.target;
+                
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+                
+                fetch('http://127.0.0.1/item', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    },
+                    body: JSON.stringify({
+                        id: parseInt(itemId),
+                        status: newStatus
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to update item status');
+                    }
+                    return response.text();
+                })
+                .then(message => {
+                    showNotification('Status updated successfully!', true);
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => {
+                        saveBtn.textContent = 'Save';
+                        saveBtn.disabled = false;
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error updating status: ' + error.message, false);
+                    saveBtn.textContent = 'Save';
+                    saveBtn.disabled = false;
+                    
+                    const checkbox = document.querySelector(`#checkbox-${itemId}`);
+                    checkbox.checked = !newStatus;
+                    const statusSpan = document.getElementById(`status-${itemId}`);
+                    statusSpan.textContent = newStatus ? 'Pending' : 'Completed';
+                    statusSpan.className = `todo-status ${newStatus ? 'pending' : 'completed'}`;
+                });
+            }
+            
+            function addNewItem() {
+                const input = document.getElementById('new-item-input');
+                const btn = document.getElementById('add-item-btn');
+                const text = input.value.trim();
+                
+                if (!text) {
+                    showNotification('Please enter a todo item', false);
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.textContent = 'Adding...';
+                
+                fetch('http://127.0.0.1/item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    },
+                    body: JSON.stringify({
+                        text: text
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to add new item');
+                    }
+                    return response.text();
+                })
+                .then(message => {
+                    showNotification('Item added successfully!', true);
+                    input.value = '';
+                    btn.textContent = 'Add Item';
+                    btn.disabled = false;
+
+                    loadItems();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error adding item: ' + error.message, false);
+                    btn.textContent = 'Add Item';
+                    btn.disabled = false;
+                });
+            }
+            
+            document.getElementById('add-item-btn').addEventListener('click', addNewItem);
+            
+            document.getElementById('new-item-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewItem();
+                }
+            });
+            
+            loadItems();
+        });
+    </script>
+</body>
+</html>
